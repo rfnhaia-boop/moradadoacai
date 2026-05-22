@@ -364,7 +364,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <button class="qty-btn minus" onclick="updateQty('${item.id}', -1)">-</button>
                     <span class="cart-item-qty">${item.quantity}</span>
                     <button class="qty-btn plus" onclick="updateQty('${item.id}', 1)">+</button>
-                    <button class="remove-btn" onclick="removeCartItem('${item.id}')" aria-label="Remover item">
+                    <button class="btn-remove-item" onclick="removeCartItem('${item.id}')" aria-label="Remover item">
                       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="3 6 5 6 21 6"></polyline>
                         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -426,27 +426,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // =============================================
-  // CUSTOMIZER MODAL (AÇAÍ) LOGIC
+  // DEDICATED CUSTOMIZER PAGE (AÇAÍ) LOGIC
   // =============================================
 
-  function updateModalPrice() {
-    if (!acaiForm || !modalTotalPrice) return;
-    const selectedRadio = acaiForm.querySelector('input[name="acaiSize"]:checked');
-    if (selectedRadio) {
-      const price = parseFloat(selectedRadio.getAttribute('data-price')) || 0;
-      modalTotalPrice.textContent = formatCurrency(price);
-    }
-  }
-
-  if (acaiForm) {
-    acaiForm.querySelectorAll('input[name="acaiSize"]').forEach(radio => {
-      radio.addEventListener('change', updateModalPrice);
-    });
-
-    acaiForm.querySelectorAll('.option-tiles input[type="checkbox"]').forEach(checkbox => {
-      checkbox.addEventListener('change', enforceOptionLimits);
-    });
-  }
+  const isMontarPage = window.location.pathname.includes('montar.html');
 
   function enforceOptionLimits() {
     const optionGrids = document.querySelectorAll('.option-tiles');
@@ -474,41 +457,262 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function openAcaiModal(preselectedSize) {
-    if (!acaiModal || !acaiForm) return;
-    
-    // Reset form and checkbox disabled visual states
-    acaiForm.reset();
-    enforceOptionLimits();
-    
-    if (preselectedSize) {
-      const radio = acaiForm.querySelector(`input[name="acaiSize"][value="${preselectedSize}"]`);
-      if (radio) {
-        radio.checked = true;
+  if (isMontarPage && acaiForm) {
+    const previewCup = document.getElementById('previewCup');
+    const previewFill = document.getElementById('previewFill');
+    const creamLayersContainer = document.getElementById('creamLayers');
+    const floatingContainer = document.getElementById('floatingIngredients');
+
+    const summarySize = document.getElementById('summarySize');
+    const summaryCremes = document.getElementById('summaryCremes');
+    const summaryFrutas = document.getElementById('summaryFrutas');
+    const summaryToppings = document.getElementById('summaryToppings');
+    const montarTotalPrice = document.getElementById('montarTotalPrice');
+
+  if (isMontarPage && acaiForm) {
+    const previewCup = document.getElementById('previewCup');
+    const previewFill = document.getElementById('previewFill');
+    const creamLayersContainer = document.getElementById('creamLayers');
+    const floatingContainer = document.getElementById('floatingIngredients');
+
+    const summarySize = document.getElementById('summarySize');
+    const summaryCremes = document.getElementById('summaryCremes');
+    const summaryFrutas = document.getElementById('summaryFrutas');
+    const summaryToppings = document.getElementById('summaryToppings');
+    const montarTotalPrice = document.getElementById('montarTotalPrice');
+
+    const particleClassMap = {
+      'Morango': { category: 'fruit', slug: 'morango' },
+      'Banana': { category: 'fruit', slug: 'banana' },
+      'Kiwi': { category: 'fruit', slug: 'kiwi' },
+      'Manga': { category: 'fruit', slug: 'manga' },
+      'Abacaxi': { category: 'fruit', slug: 'abacaxi' },
+      'Coco Ralado': { category: 'fruit', slug: 'coco-ralado' },
+      'Granola Artesanal': { category: 'topping', slug: 'granola' },
+      'Leite em Pó Ninho': { category: 'topping', slug: 'leite-ninho' },
+      'KitKat': { category: 'topping', slug: 'kitkat' },
+      'Ouro Branco': { category: 'topping', slug: 'ouro-branco' },
+      'Laka': { category: 'topping', slug: 'laka' },
+      'Paçoca': { category: 'topping', slug: 'pacoca' },
+      'Pé de Moleque': { category: 'topping', slug: 'pe-de-moleque' },
+      'Confetes M&Ms': { category: 'topping', slug: 'confetes' }
+    };
+
+    const creamClassMap = {
+      'Nutella': 'cream-nutella',
+      'Leite Condensado': 'cream-leite-condensado',
+      'Creme de Ninho': 'cream-ninho',
+      'Ovomaltine': 'cream-ovomaltine',
+      'Doce de Leite': 'cream-doce-de-leite',
+      'Creme de Cupuaçu': 'cream-cupuacu'
+    };
+
+    const emojiMap = {
+      // Cremes
+      'Nutella': '🍫',
+      'Leite Condensado': '🥛',
+      'Creme de Ninho': '🍼',
+      'Ovomaltine': '🍪',
+      'Doce de Leite': '🍯',
+      'Creme de Cupuaçu': '🌴',
+      // Frutas
+      'Morango': '🍓',
+      'Banana': '🍌',
+      'Kiwi': '🥝',
+      'Manga': '🥭',
+      'Abacaxi': '🍍',
+      'Coco Ralado': '🥥',
+      // Toppings
+      'Granola Artesanal': '🌾',
+      'Leite em Pó Ninho': '🥛',
+      'KitKat': '🍫',
+      'Ouro Branco': '🍬',
+      'Laka': '🍫',
+      'Paçoca': '🥜',
+      'Pé de Moleque': '🥜',
+      'Confetes M&Ms': '🍬'
+    };
+
+    // Premium Animations and Interactions Helpers
+    function triggerWobble() {
+      if (!previewCup) return;
+      previewCup.classList.remove('wobble');
+      void previewCup.offsetWidth; // trigger reflow
+      previewCup.classList.add('wobble');
+    }
+
+    function triggerSplash() {
+      if (!previewFill) return;
+      const splash = document.createElement('div');
+      splash.className = 'purple-splash';
+      previewFill.appendChild(splash);
+      setTimeout(() => {
+        splash.remove();
+      }, 500);
+    }
+
+    function showToast(name, isAdded) {
+      if (!previewCup) return;
+      const toast = document.createElement('div');
+      toast.className = 'floating-toast';
+      const emoji = emojiMap[name] || '✨';
+      toast.textContent = isAdded ? `+ ${name} ${emoji}` : `- ${name} ${emoji}`;
+      previewCup.appendChild(toast);
+      setTimeout(() => {
+        toast.remove();
+      }, 1200);
+    }
+
+    // Parse URL size parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const sizeParam = urlParams.get('size');
+    if (sizeParam) {
+      const targetRadio = acaiForm.querySelector(`input[name="acaiSize"][value="${sizeParam}"]`);
+      if (targetRadio) {
+        targetRadio.checked = true;
       }
     }
-    
-    updateModalPrice();
-    acaiModal.classList.add('open');
-    document.body.style.overflow = 'hidden';
-  }
 
-  function closeAcaiModalFunc() {
-    if (acaiModal) {
-      acaiModal.classList.remove('open');
-      document.body.style.overflow = '';
+    // Set initial cup fill height animation
+    if (previewFill) {
+      previewFill.style.height = '0%';
+      setTimeout(() => {
+        previewFill.style.height = '92%';
+      }, 300);
     }
-  }
 
-  if (closeAcaiModal) closeAcaiModal.addEventListener('click', closeAcaiModalFunc);
-  if (acaiModal) {
-    acaiModal.addEventListener('click', (e) => {
-      if (e.target === acaiModal) closeAcaiModalFunc();
+    function updatePreviewAndSummary() {
+      // 1. Size
+      const selectedSizeRadio = acaiForm.querySelector('input[name="acaiSize"]:checked');
+      const size = selectedSizeRadio ? selectedSizeRadio.value : '300ml';
+      const basePrice = selectedSizeRadio ? parseFloat(selectedSizeRadio.getAttribute('data-price')) : 15.90;
+
+      // Update cup classes
+      if (previewCup) {
+        previewCup.className = 'acai-preview-cup';
+        previewCup.classList.add(`size-${size}`);
+      }
+
+      if (summarySize) {
+        summarySize.textContent = `Copo ${size}`;
+      }
+
+      // 2. Cremes (Layers)
+      const selectedCremes = Array.from(acaiForm.querySelectorAll('input[name="acaiCremes"]:checked')).map(cb => cb.value);
+      if (summaryCremes) {
+        summaryCremes.textContent = selectedCremes.length > 0 ? selectedCremes.join(', ') : 'Nenhum selecionado';
+      }
+
+      // Render cream layers
+      if (creamLayersContainer) {
+        creamLayersContainer.innerHTML = '';
+        selectedCremes.forEach((creme, idx) => {
+          const layer = document.createElement('div');
+          const colorClass = creamClassMap[creme] || 'cream-nutella';
+          layer.className = `cream-layer ${colorClass}`;
+          
+          let bottomPercent = 50;
+          if (selectedCremes.length === 1) bottomPercent = 45;
+          else if (selectedCremes.length === 2) bottomPercent = idx === 0 ? 30 : 60;
+          else if (selectedCremes.length === 3) bottomPercent = idx === 0 ? 25 : idx === 1 ? 50 : 75;
+          
+          layer.style.bottom = `${bottomPercent}%`;
+          creamLayersContainer.appendChild(layer);
+        });
+      }
+
+      // 3. Frutas (Particles)
+      const selectedFrutas = Array.from(acaiForm.querySelectorAll('input[name="acaiFrutas"]:checked')).map(cb => cb.value);
+      if (summaryFrutas) {
+        summaryFrutas.textContent = selectedFrutas.length > 0 ? selectedFrutas.join(', ') : 'Nenhuma selecionada';
+      }
+
+      // 4. Toppings (Particles)
+      const selectedToppings = Array.from(acaiForm.querySelectorAll('input[name="acaiToppings"]:checked')).map(cb => cb.value);
+      if (summaryToppings) {
+        summaryToppings.textContent = selectedToppings.length > 0 ? selectedToppings.join(', ') : 'Nenhum selecionado';
+      }
+
+      // Sync combined list of ingredients to floating particles
+      syncFloatingItems([...selectedFrutas, ...selectedToppings]);
+
+      // 5. Total Price
+      if (montarTotalPrice) {
+        montarTotalPrice.textContent = formatCurrency(basePrice);
+      }
+    }
+
+    function syncFloatingItems(combinedList) {
+      if (!floatingContainer) return;
+      
+      const existingItems = Array.from(floatingContainer.querySelectorAll('.floating-item'));
+      const activeIngredients = new Set(combinedList);
+
+      // Remove unchecked ingredients
+      existingItems.forEach(item => {
+        const ingName = item.getAttribute('data-ingredient');
+        if (!activeIngredients.has(ingName)) {
+          item.style.transition = 'transform 0.4s ease, opacity 0.4s ease';
+          item.style.transform = 'scale(0) translateY(20px)';
+          item.style.opacity = '0';
+          setTimeout(() => item.remove(), 400);
+        }
+      });
+
+      // Spawn newly checked ingredients
+      combinedList.forEach(ingName => {
+        const count = floatingContainer.querySelectorAll(`[data-ingredient="${ingName}"]`).length;
+        if (count === 0) {
+          // Spawn 5 pieces of this ingredient
+          const mapping = particleClassMap[ingName];
+          if (!mapping) return;
+
+          for (let i = 0; i < 5; i++) {
+            const piece = document.createElement('div');
+            piece.className = `floating-item particle-${mapping.category} particle-${mapping.category}-${mapping.slug}`;
+            piece.setAttribute('data-ingredient', ingName);
+            
+            const leftPos = 12 + Math.random() * 66; // 12% to 78%
+            const topPos = 15 + Math.random() * 65;  // 15% to 80%
+            const initRot = -120 + Math.random() * 80;
+            const rot = -20 + Math.random() * 70;
+            
+            piece.style.left = `${leftPos}%`;
+            piece.style.top = `${topPos}%`;
+            piece.style.setProperty('--init-rot', `${initRot}deg`);
+            piece.style.setProperty('--rot', `${rot}deg`);
+            piece.style.animationDelay = `${i * 0.12}s`;
+            
+            floatingContainer.appendChild(piece);
+          }
+        }
+      });
+    }
+
+    // Attach listeners
+    acaiForm.querySelectorAll('input[name="acaiSize"]').forEach(radio => {
+      radio.addEventListener('change', () => {
+        updatePreviewAndSummary();
+        triggerWobble();
+        showToast(`Copo ${radio.value}`, true);
+      });
     });
-  }
 
-  // Handle Custom Açaí addition to Cart
-  if (acaiForm) {
+    acaiForm.querySelectorAll('.option-tiles input[type="checkbox"]').forEach(checkbox => {
+      checkbox.addEventListener('change', () => {
+        enforceOptionLimits();
+        updatePreviewAndSummary();
+        triggerWobble();
+        triggerSplash();
+        showToast(checkbox.value, checkbox.checked);
+      });
+    });
+
+    // Run once on load
+    enforceOptionLimits();
+    updatePreviewAndSummary();
+
+    // Handle Page Customizer Add to Cart submit
     acaiForm.addEventListener('submit', (e) => {
       e.preventDefault();
       
@@ -546,7 +750,8 @@ document.addEventListener('DOMContentLoaded', () => {
       
       cart.push(item);
       saveCart();
-      closeAcaiModalFunc();
+      
+      // Page feedback: open cart drawer immediately
       openCart();
     });
   }
@@ -574,7 +779,7 @@ document.addEventListener('DOMContentLoaded', () => {
           else if (name.includes('500ml')) size = '500ml';
           else if (name.includes('700ml')) size = '700ml';
           
-          openAcaiModal(size);
+          window.location.href = `montar.html?size=${size}`;
         } else {
           const priceText = card.querySelector('.menu-catalog-price').textContent.trim();
           const price = parseFloat(priceText.replace(/[^\d,]/g, '').replace(',', '.'));
@@ -602,7 +807,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const title = card.querySelector('h3').textContent.trim();
         if (title.includes('Açaí') || title.includes('acai')) {
-          openAcaiModal('300ml');
+          window.location.href = 'montar.html?size=300ml';
         } else if (title.includes('Tapioca')) {
           window.location.href = 'cardapio.html?filter=tapiocas';
         } else if (title.includes('Crepe')) {
@@ -613,6 +818,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   });
+
 
   // =============================================
   // SUBMIT CHECKOUT FORM TO WHATSAPP
@@ -637,7 +843,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (deliveryType === 'delivery') {
         if (streetInput) street = streetInput.value.trim();
         if (neighborhoodInput) neighborhood = neighborhoodInput.value.trim();
-        if (complement) complement = document.getElementById('complement').value.trim();
+        const complementEl = document.getElementById('complement');
+        if (complementEl) complement = complementEl.value.trim();
         
         if (!street || !neighborhood) {
           alert('Por favor, preencha a rua e o bairro para a entrega.');
