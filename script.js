@@ -169,18 +169,559 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Add hover effects to specialty cards buttons
-  document.querySelectorAll('.btn-add').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const originalText = this.textContent;
-      this.textContent = '✓ Adicionado!';
-      this.style.background = '#25d366';
-      setTimeout(() => {
-        this.textContent = originalText;
-        this.style.background = '';
-      }, 1500);
+  // =============================================
+  // SHOPPING CART & CUSTOMIZER MODAL STATE
+  // =============================================
+
+  let cart = [];
+  try {
+    const savedCart = localStorage.getItem('morada_do_acai_cart');
+    cart = savedCart ? JSON.parse(savedCart) : [];
+  } catch (e) {
+    console.error("Erro ao ler carrinho do localStorage", e);
+  }
+
+  // Currency Formatter
+  function formatCurrency(val) {
+    return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  }
+
+  // DOM Elements
+  const cartFloatBtn = document.getElementById('cartFloatBtn');
+  const cartDrawer = document.getElementById('cartDrawer');
+  const closeDrawer = document.getElementById('closeDrawer');
+  const cartItemsList = document.getElementById('cartItemsList');
+  const cartSubtotal = document.getElementById('cartSubtotal');
+  const btnCheckoutNext = document.getElementById('btnCheckoutNext');
+  const btnCheckoutBack = document.getElementById('btnCheckoutBack');
+  const cartView = document.getElementById('cartView');
+  const checkoutView = document.getElementById('checkoutView');
+  const checkoutForm = document.getElementById('checkoutForm');
+  
+  // Checkout Form Fields
+  const clientName = document.getElementById('clientName');
+  const clientPhone = document.getElementById('clientPhone');
+  const paymentMethod = document.getElementById('paymentMethod');
+  const changeGroup = document.getElementById('changeGroup');
+  const cashChange = document.getElementById('cashChange');
+  const addressFields = document.getElementById('addressFields');
+  const streetInput = document.getElementById('street');
+  const neighborhoodInput = document.getElementById('neighborhood');
+  
+  // Açaí Customization Modal Elements
+  const acaiModal = document.getElementById('acaiModal');
+  const closeAcaiModal = document.getElementById('closeAcaiModal');
+  const acaiForm = document.getElementById('acaiForm');
+  const modalTotalPrice = document.getElementById('modalTotalPrice');
+
+  // Create Cart Overlay dynamically if it doesn't exist
+  let overlay = document.querySelector('.cart-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.className = 'cart-overlay';
+    document.body.appendChild(overlay);
+  }
+
+  // Control Cart Drawer Visibility
+  function openCart() {
+    if (cartDrawer) cartDrawer.classList.add('open');
+    if (overlay) overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeCart() {
+    if (cartDrawer) cartDrawer.classList.remove('open');
+    if (overlay) overlay.classList.remove('open');
+    document.body.style.overflow = '';
+    showCartView();
+  }
+
+  if (cartFloatBtn) cartFloatBtn.addEventListener('click', openCart);
+  if (closeDrawer) closeDrawer.addEventListener('click', closeCart);
+  if (overlay) overlay.addEventListener('click', closeCart);
+
+  // Switch Drawer Views
+  function showCheckoutView() {
+    if (cart.length === 0) return;
+    if (cartView) cartView.classList.add('hidden');
+    if (checkoutView) checkoutView.classList.remove('hidden');
+  }
+
+  function showCartView() {
+    if (cartView) cartView.classList.remove('hidden');
+    if (checkoutView) checkoutView.classList.add('hidden');
+  }
+
+  if (btnCheckoutNext) btnCheckoutNext.addEventListener('click', showCheckoutView);
+  if (btnCheckoutBack) btnCheckoutBack.addEventListener('click', showCartView);
+
+  // Delivery type radio handlers
+  const deliveryTypeRadios = document.querySelectorAll('input[name="deliveryType"]');
+  deliveryTypeRadios.forEach(radio => {
+    radio.addEventListener('change', () => {
+      // Toggle active class on label wrappers
+      document.querySelectorAll('.delivery-type-label').forEach(lbl => lbl.classList.remove('active'));
+      radio.closest('.delivery-type-label').classList.add('active');
+
+      if (radio.value === 'delivery') {
+        if (addressFields) addressFields.style.display = 'block';
+        if (streetInput) streetInput.setAttribute('required', 'true');
+        if (neighborhoodInput) neighborhoodInput.setAttribute('required', 'true');
+      } else {
+        if (addressFields) addressFields.style.display = 'none';
+        if (streetInput) streetInput.removeAttribute('required');
+        if (neighborhoodInput) neighborhoodInput.removeAttribute('required');
+      }
     });
   });
+
+  // Payment method handler (show/hide cash change field)
+  if (paymentMethod) {
+    paymentMethod.addEventListener('change', () => {
+      if (paymentMethod.value === 'dinheiro') {
+        if (changeGroup) changeGroup.classList.remove('hidden');
+        if (cashChange) cashChange.setAttribute('required', 'true');
+      } else {
+        if (changeGroup) changeGroup.classList.add('hidden');
+        if (cashChange) {
+          cashChange.removeAttribute('required');
+          cashChange.value = '';
+        }
+      }
+    });
+  }
+
+  // Format phone input
+  if (clientPhone) {
+    clientPhone.addEventListener('input', function(e) {
+      let x = e.target.value.replace(/\D/g, '').match(/(\d{0,2})(\d{0,5})(\d{0,4})/);
+      e.target.value = !x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : '');
+    });
+  }
+
+  // Save cart state
+  function saveCart() {
+    localStorage.setItem('morada_do_acai_cart', JSON.stringify(cart));
+    updateCartUI();
+  }
+
+  // Cross-tab real-time sync
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'morada_do_acai_cart') {
+      try {
+        cart = e.newValue ? JSON.parse(e.newValue) : [];
+        updateCartUI();
+      } catch (err) {
+        console.error("Erro ao sincronizar carrinho", err);
+      }
+    }
+  });
+
+  // Update Cart Drawer UI
+  function updateCartUI() {
+    let totalItems = 0;
+    let subtotal = 0;
+    cart.forEach(item => {
+      totalItems += item.quantity;
+      subtotal += item.price * item.quantity;
+    });
+
+    const cartBadge = document.getElementById('cartBadge');
+    if (cartBadge) {
+      cartBadge.textContent = totalItems;
+      cartBadge.style.animation = 'none';
+      void cartBadge.offsetWidth; // trigger reflow
+      cartBadge.style.animation = 'popIn 0.3s ease-out';
+    }
+
+    if (cartItemsList) {
+      if (cart.length === 0) {
+        cartItemsList.innerHTML = `
+          <div class="empty-cart-message">
+            <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="9" cy="21" r="1"></circle>
+              <circle cx="20" cy="21" r="1"></circle>
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+            </svg>
+            <p>Seu carrinho está vazio.</p>
+          </div>
+        `;
+        if (btnCheckoutNext) btnCheckoutNext.disabled = true;
+      } else {
+        let itemsHTML = '';
+        cart.forEach(item => {
+          itemsHTML += `
+            <div class="cart-item">
+              <div class="cart-item-img">
+                <img src="${item.image}" alt="${item.name}">
+              </div>
+              <div class="cart-item-details">
+                <span class="cart-item-name">${item.name}</span>
+                ${item.optionsText ? `<div class="cart-item-options"><p>${item.optionsText}</p></div>` : ''}
+                <div class="cart-item-meta">
+                  <span class="cart-item-price">${formatCurrency(item.price * item.quantity)}</span>
+                  <div class="cart-item-actions">
+                    <button class="qty-btn minus" onclick="updateQty('${item.id}', -1)">-</button>
+                    <span class="cart-item-qty">${item.quantity}</span>
+                    <button class="qty-btn plus" onclick="updateQty('${item.id}', 1)">+</button>
+                    <button class="remove-btn" onclick="removeCartItem('${item.id}')" aria-label="Remover item">
+                      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+        cartItemsList.innerHTML = itemsHTML;
+        if (btnCheckoutNext) btnCheckoutNext.disabled = false;
+      }
+    }
+
+    if (cartSubtotal) {
+      cartSubtotal.textContent = formatCurrency(subtotal);
+    }
+  }
+
+  // Global window functions for inline onclick handlers
+  window.updateQty = function(id, delta) {
+    const index = cart.findIndex(item => item.id === id);
+    if (index > -1) {
+      cart[index].quantity += delta;
+      if (cart[index].quantity <= 0) {
+        cart.splice(index, 1);
+      }
+      saveCart();
+    }
+  };
+
+  window.removeCartItem = function(id) {
+    const index = cart.findIndex(item => item.id === id);
+    if (index > -1) {
+      cart.splice(index, 1);
+      saveCart();
+    }
+  };
+
+  // Add standard catalog items to cart
+  function addRegularItem(name, price, image) {
+    const existingIndex = cart.findIndex(item => item.name === name && !item.isCustom);
+    if (existingIndex > -1) {
+      cart[existingIndex].quantity += 1;
+    } else {
+      cart.push({
+        id: 'regular-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5),
+        name: name,
+        price: price,
+        image: image || 'images/logo-morada.png',
+        quantity: 1,
+        isCustom: false
+      });
+    }
+    saveCart();
+    openCart();
+  }
+
+  // =============================================
+  // CUSTOMIZER MODAL (AÇAÍ) LOGIC
+  // =============================================
+
+  function updateModalPrice() {
+    if (!acaiForm || !modalTotalPrice) return;
+    const selectedRadio = acaiForm.querySelector('input[name="acaiSize"]:checked');
+    if (selectedRadio) {
+      const price = parseFloat(selectedRadio.getAttribute('data-price')) || 0;
+      modalTotalPrice.textContent = formatCurrency(price);
+    }
+  }
+
+  if (acaiForm) {
+    acaiForm.querySelectorAll('input[name="acaiSize"]').forEach(radio => {
+      radio.addEventListener('change', updateModalPrice);
+    });
+
+    acaiForm.querySelectorAll('.option-tiles input[type="checkbox"]').forEach(checkbox => {
+      checkbox.addEventListener('change', enforceOptionLimits);
+    });
+  }
+
+  function enforceOptionLimits() {
+    const optionGrids = document.querySelectorAll('.option-tiles');
+    optionGrids.forEach(grid => {
+      const limit = parseInt(grid.getAttribute('data-limit')) || 3;
+      const checkboxes = grid.querySelectorAll('input[type="checkbox"]');
+      const checkedCount = grid.querySelectorAll('input[type="checkbox"]:checked').length;
+      
+      checkboxes.forEach(cb => {
+        const label = cb.closest('.tile-option');
+        if (cb.checked) {
+          cb.disabled = false;
+          if (label) label.classList.remove('disabled');
+        } else {
+          cb.disabled = checkedCount >= limit;
+          if (label) {
+            if (checkedCount >= limit) {
+              label.classList.add('disabled');
+            } else {
+              label.classList.remove('disabled');
+            }
+          }
+        }
+      });
+    });
+  }
+
+  function openAcaiModal(preselectedSize) {
+    if (!acaiModal || !acaiForm) return;
+    
+    // Reset form and checkbox disabled visual states
+    acaiForm.reset();
+    enforceOptionLimits();
+    
+    if (preselectedSize) {
+      const radio = acaiForm.querySelector(`input[name="acaiSize"][value="${preselectedSize}"]`);
+      if (radio) {
+        radio.checked = true;
+      }
+    }
+    
+    updateModalPrice();
+    acaiModal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeAcaiModalFunc() {
+    if (acaiModal) {
+      acaiModal.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+  }
+
+  if (closeAcaiModal) closeAcaiModal.addEventListener('click', closeAcaiModalFunc);
+  if (acaiModal) {
+    acaiModal.addEventListener('click', (e) => {
+      if (e.target === acaiModal) closeAcaiModalFunc();
+    });
+  }
+
+  // Handle Custom Açaí addition to Cart
+  if (acaiForm) {
+    acaiForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      const selectedSizeRadio = acaiForm.querySelector('input[name="acaiSize"]:checked');
+      if (!selectedSizeRadio) return;
+      
+      const size = selectedSizeRadio.value;
+      const price = parseFloat(selectedSizeRadio.getAttribute('data-price')) || 0;
+      
+      const cremes = Array.from(acaiForm.querySelectorAll('input[name="acaiCremes"]:checked')).map(cb => cb.value);
+      const frutas = Array.from(acaiForm.querySelectorAll('input[name="acaiFrutas"]:checked')).map(cb => cb.value);
+      const toppings = Array.from(acaiForm.querySelectorAll('input[name="acaiToppings"]:checked')).map(cb => cb.value);
+      
+      const optionsList = [];
+      if (cremes.length > 0) optionsList.push(`Cremes: ${cremes.join(', ')}`);
+      if (frutas.length > 0) optionsList.push(`Frutas: ${frutas.join(', ')}`);
+      if (toppings.length > 0) optionsList.push(`Adicionais: ${toppings.join(', ')}`);
+      const optionsText = optionsList.join(' | ');
+      
+      const item = {
+        id: 'acai-custom-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5),
+        name: `Monte seu Açaí (${size})`,
+        price: price,
+        image: 'images/acai-real.jpg?v=3',
+        quantity: 1,
+        isCustom: true,
+        details: {
+          size: size,
+          cremes: cremes,
+          frutas: frutas,
+          toppings: toppings
+        },
+        optionsText: optionsText
+      };
+      
+      cart.push(item);
+      saveCart();
+      closeAcaiModalFunc();
+      openCart();
+    });
+  }
+
+  // =============================================
+  // REDIRECT / ADD TO CART BUTTON CLICK EVENTS
+  // =============================================
+
+  document.querySelectorAll('.btn-add').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      
+      const isCardapio = window.location.pathname.includes('cardapio.html');
+      
+      if (isCardapio) {
+        const card = this.closest('.menu-catalog-card');
+        if (!card) return;
+        
+        const category = card.getAttribute('data-category');
+        const name = card.querySelector('h3').textContent.trim();
+        
+        if (category === 'acai') {
+          let size = '300ml';
+          if (name.includes('300ml')) size = '300ml';
+          else if (name.includes('500ml')) size = '500ml';
+          else if (name.includes('700ml')) size = '700ml';
+          
+          openAcaiModal(size);
+        } else {
+          const priceText = card.querySelector('.menu-catalog-price').textContent.trim();
+          const price = parseFloat(priceText.replace(/[^\d,]/g, '').replace(',', '.'));
+          const img = card.querySelector('img');
+          const image = img ? img.getAttribute('src') : 'images/logo-morada.png';
+          
+          addRegularItem(name, price, image);
+          
+          // Button Visual Feedback
+          const originalText = this.textContent;
+          this.textContent = '✓ Adicionado!';
+          this.style.background = '#25d366';
+          this.style.color = '#ffffff';
+          this.style.borderColor = '#25d366';
+          setTimeout(() => {
+            this.textContent = originalText;
+            this.style.background = '';
+            this.style.color = '';
+            this.style.borderColor = '';
+          }, 1200);
+        }
+      } else {
+        const card = this.closest('.specialty-card');
+        if (!card) return;
+        
+        const title = card.querySelector('h3').textContent.trim();
+        if (title.includes('Açaí') || title.includes('acai')) {
+          openAcaiModal('300ml');
+        } else if (title.includes('Tapioca')) {
+          window.location.href = 'cardapio.html?filter=tapiocas';
+        } else if (title.includes('Crepe')) {
+          window.location.href = 'cardapio.html?filter=crepes';
+        } else if (title.includes('Suco')) {
+          window.location.href = 'cardapio.html?filter=sucos';
+        }
+      }
+    });
+  });
+
+  // =============================================
+  // SUBMIT CHECKOUT FORM TO WHATSAPP
+  // =============================================
+
+  if (checkoutForm) {
+    checkoutForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      if (cart.length === 0) return;
+      
+      const name = clientName.value.trim();
+      const phone = clientPhone.value.trim();
+      const deliveryType = checkoutForm.querySelector('input[name="deliveryType"]:checked').value;
+      const payment = paymentMethod.value;
+      const change = cashChange ? cashChange.value.trim() : '';
+      
+      let street = '';
+      let neighborhood = '';
+      let complement = '';
+      
+      if (deliveryType === 'delivery') {
+        if (streetInput) street = streetInput.value.trim();
+        if (neighborhoodInput) neighborhood = neighborhoodInput.value.trim();
+        if (complement) complement = document.getElementById('complement').value.trim();
+        
+        if (!street || !neighborhood) {
+          alert('Por favor, preencha a rua e o bairro para a entrega.');
+          return;
+        }
+      }
+      
+      let subtotal = 0;
+      cart.forEach(item => {
+        subtotal += item.price * item.quantity;
+      });
+      
+      const deliveryFee = deliveryType === 'delivery' ? 5.00 : 0.00;
+      const total = subtotal + deliveryFee;
+      
+      // Compile formatted WhatsApp message
+      let msg = `*NOVO PEDIDO - MORADA DO AÇAÍ* 💚\n`;
+      msg += `----------------------------------\n`;
+      msg += `👤 *Cliente*: ${name}\n`;
+      msg += `📞 *WhatsApp*: ${phone}\n\n`;
+      
+      msg += `🛍️ *Itens do Pedido*:\n`;
+      cart.forEach(item => {
+        msg += `• ${item.quantity}x ${item.name} - ${formatCurrency(item.price * item.quantity)}\n`;
+        if (item.isCustom && item.details) {
+          const d = item.details;
+          if (d.cremes && d.cremes.length > 0) {
+            msg += `  └ Cremes: ${d.cremes.join(', ')}\n`;
+          }
+          if (d.frutas && d.frutas.length > 0) {
+            msg += `  └ Frutas: ${d.frutas.join(', ')}\n`;
+          }
+          if (d.toppings && d.toppings.length > 0) {
+            msg += `  └ Adicionais: ${d.toppings.join(', ')}\n`;
+          }
+        }
+      });
+      msg += `\n`;
+      
+      msg += `----------------------------------\n`;
+      if (deliveryType === 'delivery') {
+        msg += `🛵 *Tipo*: Delivery\n`;
+        msg += `📍 *Endereço*: ${street} - ${neighborhood}\n`;
+        if (complement) {
+          msg += `📍 *Ref/Comp*: ${complement}\n`;
+        }
+      } else {
+        msg += `🛵 *Tipo*: Retirada no Local\n`;
+      }
+      
+      const paymentLabels = {
+        pix: 'Pix',
+        cartao: 'Cartão de Crédito / Débito',
+        dinheiro: 'Dinheiro'
+      };
+      msg += `💳 *Pagamento*: ${paymentLabels[payment] || payment}\n`;
+      if (payment === 'dinheiro' && change) {
+        msg += `💵 *Troco para*: R$ ${change}\n`;
+      }
+      msg += `\n`;
+      
+      msg += `💰 *Subtotal*: ${formatCurrency(subtotal)}\n`;
+      if (deliveryType === 'delivery') {
+        msg += `🛵 *Taxa de Entrega*: ${formatCurrency(deliveryFee)}\n`;
+      }
+      msg += `💵 *Total*: ${formatCurrency(total)}\n`;
+      
+      // WhatsApp Direct Link
+      const whatsappNumber = '557133577733';
+      const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(msg)}`;
+      window.open(url, '_blank');
+      
+      // Clear local state & elements
+      cart = [];
+      saveCart();
+      closeCart();
+      checkoutForm.reset();
+      
+      alert('Pedido enviado com sucesso para o WhatsApp!');
+    });
+  }
+
+  // Initial Cart Rendering
+  updateCartUI();
 
   // Specialties Carousel
   const track = document.getElementById('carouselTrack');
