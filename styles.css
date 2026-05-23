@@ -2591,7 +2591,7 @@ button {
   border: 2px solid var(--beige);
   border-radius: var(--radius-lg);
   transition: all var(--transition-normal);
-  min-height: 64px;
+  min-height: 80px;
   position: relative;
 }
 
@@ -2607,8 +2607,8 @@ button {
   justify-content: center;
   text-align: center;
   padding: var(--space-md) var(--space-sm);
-  min-height: 120px;
-  gap: 8px;
+  min-height: 165px;
+  gap: 12px;
 }
 
 .size-tiles .tile-details {
@@ -2636,10 +2636,10 @@ button {
 
 /* Real photo tiles style */
 .tile-real-photo {
-  width: 40px;
-  height: 40px;
-  min-width: 40px;
-  border-radius: var(--radius-md);
+  width: 58px;
+  height: 58px;
+  min-width: 58px;
+  border-radius: var(--radius-lg);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -2650,28 +2650,33 @@ button {
 /* Cups Sprite */
 .photo-cup-300, .photo-cup-500, .photo-cup-700 {
   background-image: url('images/cups_sprite.png');
-  background-size: 300% 100%;
+  background-size: 300% 300%;
 }
-.photo-cup-300 { background-position: 0% 0%; }
-.photo-cup-500 { background-position: 50% 0%; }
-.photo-cup-700 { background-position: 100% 0%; }
+.photo-cup-300 { background-position: 0% 50%; }
+.photo-cup-500 { background-position: 50% 50%; }
+.photo-cup-700 { background-position: 100% 50%; }
 
-/* Cremes Sprite */
+/* Cremes Sprite (2-row columns: Col 1 and Col 3) */
 .photo-cream-nutella,
-.photo-cream-leite-moca,
 .photo-cream-creme-ninho,
 .photo-cream-ovomaltine,
-.photo-cream-doce-leite,
 .photo-cream-creme-cupuacu {
   background-image: url('images/cremes_sprite.png');
   background-size: 300% 200%;
 }
 .photo-cream-nutella { background-position: 0% 0%; }
-.photo-cream-leite-moca { background-position: 50% 0%; }
 .photo-cream-creme-ninho { background-position: 100% 0%; }
 .photo-cream-ovomaltine { background-position: 0% 100%; }
-.photo-cream-doce-leite { background-position: 50% 100%; }
 .photo-cream-creme-cupuacu { background-position: 100% 100%; }
+
+/* Cremes Sprite (3-row column: Col 2) */
+.photo-cream-leite-moca,
+.photo-cream-doce-leite {
+  background-image: url('images/cremes_sprite.png');
+  background-size: 300% 300%;
+}
+.photo-cream-leite-moca { background-position: 50% 0%; }
+.photo-cream-doce-leite { background-position: 50% 50%; }
 
 /* Frutas Sprite */
 .photo-fruit-morango,
@@ -2681,14 +2686,14 @@ button {
 .photo-fruit-abacaxi,
 .photo-fruit-coco-ralado {
   background-image: url('images/frutas_sprite.png');
-  background-size: 300% 200%;
+  background-size: 300% 300%;
 }
 .photo-fruit-morango { background-position: 0% 0%; }
 .photo-fruit-banana { background-position: 50% 0%; }
 .photo-fruit-kiwi { background-position: 100% 0%; }
-.photo-fruit-manga { background-position: 0% 100%; }
-.photo-fruit-abacaxi { background-position: 50% 100%; }
-.photo-fruit-coco-ralado { background-position: 100% 100%; }
+.photo-fruit-manga { background-position: 0% 50%; }
+.photo-fruit-abacaxi { background-position: 50% 50%; }
+.photo-fruit-coco-ralado { background-position: 100% 50%; }
 
 /* Toppings Sprite */
 .photo-topping-granola,
@@ -2713,9 +2718,9 @@ button {
 
 /* Size tiles photo size override */
 .size-tiles .tile-real-photo {
-  width: 70px;
-  height: 70px;
-  min-width: 70px;
+  width: 95px;
+  height: 95px;
+  min-width: 95px;
   background-color: transparent;
   box-shadow: none;
 }
@@ -3010,389 +3015,64 @@ button {
   text-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
 
-/* Visual Cup */
-.acai-preview-cup {
+/* Premium Real Photo Preview */
+.acai-real-photo-preview {
   position: relative;
-  width: 170px;
-  height: 250px;
-  border: 5px solid rgba(255, 255, 255, 0.25);
-  border-top: none;
-  border-bottom-left-radius: 35px 60px;
-  border-bottom-right-radius: 35px 60px;
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
-  background: rgba(255, 255, 255, 0.04);
-  box-shadow: inset 0 0 30px rgba(255, 255, 255, 0.08), 
-              0 15px 35px rgba(0, 0, 0, 0.5),
-              0 0 0 1px rgba(255, 255, 255, 0.1);
-  overflow: visible;
-  transition: width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
-              height 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  display: flex;
-  align-items: flex-end;
-  z-index: 2;
+  width: 100%;
+  max-width: 240px;
+  height: 280px;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  border: 3px solid var(--gold);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+  background-color: var(--green-dark);
+  margin: var(--space-xs) 0 15px 0;
 }
 
-/* 3D Glass Rim */
-.cup-rim {
-  position: absolute;
-  top: -6px;
-  left: -5px;
-  right: -5px;
-  height: 12px;
-  border: 5px solid rgba(255, 255, 255, 0.35);
-  border-radius: 50%;
-  z-index: 10;
-  pointer-events: none;
-  background: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.4);
+.acai-real-photo-preview:hover {
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6), 0 0 15px rgba(212, 175, 55, 0.3);
 }
 
-/* 3D Açaí Surface Cap */
-.acai-fill-cap {
-  position: absolute;
-  top: -6px;
-  left: 0;
-  right: 0;
-  height: 12px;
-  background: #240533;
-  border-radius: 50%;
-  z-index: 2;
-  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.15), 0 2px 4px rgba(0,0,0,0.3);
+.acai-preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+  display: block;
 }
 
-/* Gold Spoon */
-.cup-spoon {
-  position: absolute;
-  top: -45px;
-  right: 25px;
-  width: 14px;
-  height: 110px;
-  background: linear-gradient(to bottom, #d4af37, #aa7c11, #f3e5ab, #aa7c11);
-  border-radius: 4px;
-  z-index: 1;
-  transform: rotate(15deg);
-  box-shadow: 2px 5px 8px rgba(0,0,0,0.35);
-  transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  transform-origin: bottom center;
+.acai-real-photo-preview:hover .acai-preview-img {
+  transform: scale(1.06);
 }
-.cup-spoon::before {
-  content: '';
+
+.acai-preview-overlay {
   position: absolute;
   bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 24px;
-  height: 36px;
-  background: radial-gradient(circle at center, #f3e5ab 0%, #aa7c11 60%, #5a4005 100%);
-  border-radius: 50% 50% 40% 40%;
-  box-shadow: inset 0 2px 4px rgba(255,255,255,0.4), 0 2px 4px rgba(0,0,0,0.2);
-}
-.acai-preview-cup:hover .cup-spoon {
-  transform: rotate(10deg) translateY(-5px);
-}
-
-/* Cup sizes animations */
-.acai-preview-cup.size-300ml {
-  width: 140px;
-  height: 200px;
-}
-
-.acai-preview-cup.size-300ml .cup-spoon {
-  height: 90px;
-  top: -35px;
-}
-
-.acai-preview-cup.size-500ml {
-  width: 165px;
-  height: 250px;
-}
-
-.acai-preview-cup.size-500ml .cup-spoon {
-  height: 110px;
-  top: -45px;
-}
-
-.acai-preview-cup.size-700ml {
-  width: 190px;
-  height: 300px;
-}
-
-.acai-preview-cup.size-700ml .cup-spoon {
-  height: 130px;
-  top: -55px;
-}
-
-/* Purple Açaí Filling */
-.acai-preview-fill {
-  width: 100%;
-  height: 90%;
-  background: linear-gradient(to right, #240533, #3c0c52, #1b0227);
-  position: relative;
-  border-bottom-left-radius: 28px 50px;
-  border-bottom-right-radius: 28px 50px;
-  transition: height 0.6s cubic-bezier(0.25, 1, 0.5, 1);
-  overflow: hidden;
-  box-shadow: inset 0 10px 20px rgba(0,0,0,0.4);
-}
-
-/* Glass Reflection */
-.cup-reflection {
-  position: absolute;
-  top: 0;
-  left: 12px;
-  width: 20px;
-  height: 100%;
-  background: linear-gradient(to right, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.05) 50%, transparent 100%);
-  z-index: 5;
-  pointer-events: none;
-  transform: skewX(-6deg);
-}
-
-.cup-shadow {
-  width: 170px;
-  height: 14px;
-  background: rgba(0, 0, 0, 0.55);
-  border-radius: var(--radius-full);
-  filter: blur(5px);
-  margin-top: 10px;
-  transition: width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.acai-preview-cup.size-300ml ~ .cup-shadow { width: 140px; }
-.acai-preview-cup.size-500ml ~ .cup-shadow { width: 170px; }
-.acai-preview-cup.size-700ml ~ .cup-shadow { width: 190px; }
-
-/* Cream Layers inside Açaí */
-.cream-layers {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-around;
-  pointer-events: none;
-  z-index: 3;
-}
-
-.cream-layer {
-  width: 100%;
-  height: 30px;
-  opacity: 0.95;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.2), inset 0 -2px 4px rgba(0,0,0,0.2);
-  transform: scaleY(0);
-  transform-origin: center;
-  animation: dropLayer 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-  position: absolute;
   left: 0;
-  overflow: visible;
-}
-
-/* Dripping Caldas */
-.cream-layer::before, .cream-layer::after {
-  content: '';
-  position: absolute;
-  top: 100%;
-  width: 8px;
-  border-radius: 0 0 4px 4px;
-  animation: drip 2.5s ease-in-out infinite alternate;
-}
-.cream-layer::before {
-  left: 20%;
-  height: 18px;
-  animation-delay: 0.2s;
-}
-.cream-layer::after {
-  right: 25%;
-  height: 24px;
-  width: 10px;
-  animation-delay: 0.7s;
-}
-
-@keyframes dropLayer {
-  0% { transform: scaleY(0); opacity: 0; }
-  100% { transform: scaleY(1); opacity: 0.95; }
-}
-
-@keyframes drip {
-  0% { height: 5px; transform: scaleY(0.8); }
-  100% { height: 28px; transform: scaleY(1.1); }
-}
-
-/* Cream Colors & Dripping Caldas Colors */
-.cream-nutella {
-  background: linear-gradient(180deg, #3f220f, #271407);
-  border-top: 1px solid #573117;
-  border-bottom: 1px solid #1a0b03;
-}
-.cream-nutella::before, .cream-nutella::after { background: #271407; }
-
-.cream-leite-condensado {
-  background: linear-gradient(180deg, #faf7e9, #ece2be);
-  border-top: 1px solid #fff;
-  border-bottom: 1px solid #dfd3a8;
-}
-.cream-leite-condensado::before, .cream-leite-condensado::after { background: #ece2be; }
-
-.cream-ninho {
-  background: linear-gradient(180deg, #fdfaf2, #f5eccf);
-  border-top: 1px solid #fff;
-  border-bottom: 1px solid #e7dcb4;
-}
-.cream-ninho::before, .cream-ninho::after { background: #f5eccf; }
-
-.cream-ovomaltine {
-  background: linear-gradient(180deg, #4c2912, #321908);
-  border-top: 1px solid #62381c;
-  border-bottom: 1px solid #1c0d02;
-}
-.cream-ovomaltine::before, .cream-ovomaltine::after { background: #321908; }
-
-.cream-doce-de-leite {
-  background: linear-gradient(180deg, #d35400, #b33600);
-  border-top: 1px solid #e67e22;
-  border-bottom: 1px solid #802200;
-}
-.cream-doce-de-leite::before, .cream-doce-de-leite::after { background: #b33600; }
-
-.cream-cupuacu {
-  background: linear-gradient(180deg, #fafbf0, #ecf0c1);
-  border-top: 1px solid #fff;
-  border-bottom: 1px solid #dde2aa;
-}
-.cream-cupuacu::before, .cream-cupuacu::after { background: #ecf0c1; }
-
-/* Floating Ingredients */
-.floating-ingredients {
-  position: absolute;
-  inset: 0;
+  right: 0;
+  padding: var(--space-md) var(--space-sm);
+  background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 60%, transparent 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
   pointer-events: none;
-  z-index: 4;
 }
 
-.floating-item {
-  position: absolute;
-  width: 26px;
-  height: 26px;
-  opacity: 0;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-  border-radius: var(--radius-sm);
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  animation: fallAndSettle 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards, 
-             floatGently 4s ease-in-out infinite alternate;
-}
-
-/* Particles Sprite Mapping */
-.floating-item.particle-fruit {
-  background-image: url('images/frutas_sprite.png');
-  background-size: 300% 200%;
-}
-.floating-item.particle-topping {
-  background-image: url('images/toppings_sprite.png');
-  background-size: 400% 200%;
-}
-
-.particle-fruit-morango { background-position: 0% 0%; }
-.particle-fruit-banana { background-position: 50% 0%; }
-.particle-fruit-kiwi { background-position: 100% 0%; }
-.particle-fruit-manga { background-position: 0% 100%; }
-.particle-fruit-abacaxi { background-position: 50% 100%; }
-.particle-fruit-coco-ralado { background-position: 100% 100%; }
-
-.particle-topping-granola { background-position: 0% 0%; }
-.particle-topping-leite-ninho { background-position: 33.333% 0%; }
-.particle-topping-kitkat { background-position: 66.666% 0%; }
-.particle-topping-ouro-branco { background-position: 100% 0%; }
-.particle-topping-laka { background-position: 0% 100%; }
-.particle-topping-pacoca { background-position: 33.333% 100%; }
-.particle-topping-pe-de-moleque { background-position: 66.666% 100%; }
-.particle-topping-confetes { background-position: 100% 100%; }
-
-@keyframes fallAndSettle {
-  0% {
-    transform: translateY(-120px) rotate(var(--init-rot, 0deg)) scale(0.6);
-    opacity: 0;
-  }
-  40% {
-    opacity: 1;
-  }
-  80% {
-    transform: translateY(10px) rotate(var(--rot, 15deg)) scale(1.1);
-  }
-  100% {
-    transform: translateY(0) rotate(var(--rot, 15deg)) scale(1);
-    opacity: 1;
-  }
-}
-
-@keyframes floatGently {
-  0% { margin-top: -2px; transform: rotate(var(--rot, 15deg)) translateX(-1px); }
-  100% { margin-top: 2px; transform: rotate(calc(var(--rot, 15deg) + 12deg)) translateX(1px); }
-}
-
-/* Wobble effect when ingredients are added */
-.acai-preview-cup.wobble {
-  animation: wobble 0.6s cubic-bezier(0.25, 0.8, 0.25, 1.25);
-}
-
-@keyframes wobble {
-  0% { transform: scale(1); }
-  15% { transform: scale(1.1, 0.9) skewX(-5deg); }
-  30% { transform: scale(0.9, 1.1) skewX(5deg); }
-  45% { transform: scale(1.05, 0.95) skewX(-3deg); }
-  60% { transform: scale(0.98, 1.02) skewX(2deg); }
-  75% { transform: scale(1.01, 0.99) skewX(-1deg); }
-  100% { transform: scale(1) skewX(0); }
-}
-
-/* Purple Splash effect */
-.purple-splash {
-  position: absolute;
-  top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 80px;
-  height: 25px;
-  background: radial-gradient(ellipse at center, rgba(97, 15, 133, 0.85) 0%, rgba(60, 12, 82, 0.9) 50%, transparent 80%);
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 12;
-  animation: splashEffect 0.5s ease-out forwards;
-}
-
-@keyframes splashEffect {
-  0% { transform: translateX(-50%) scale(0.2); opacity: 0; }
-  50% { opacity: 1; }
-  100% { transform: translateX(-50%) scale(1.3); opacity: 0; }
-}
-
-/* Floating Toast Popups */
-.floating-toast {
-  position: absolute;
-  top: -40px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--gold);
-  color: var(--brown-dark);
-  padding: 6px 12px;
-  border-radius: var(--radius-full);
+.acai-preview-badge {
   font-family: var(--font-accent);
+  font-size: 0.85rem;
   font-weight: 800;
-  font-size: 0.8rem;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  pointer-events: none;
-  z-index: 20;
-  white-space: nowrap;
-  border: 1px solid var(--white);
-  animation: toastRise 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes toastRise {
-  0% { transform: translateX(-50%) translateY(10px) scale(0.8); opacity: 0; }
-  20% { transform: translateX(-50%) translateY(0) scale(1); opacity: 1; }
-  80% { opacity: 1; }
-  100% { transform: translateX(-50%) translateY(-50px) scale(0.9); opacity: 0; }
+  color: var(--green-dark);
+  background: linear-gradient(135deg, var(--gold), #f3e5ab);
+  padding: 6px 18px;
+  border-radius: var(--radius-full);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: transform var(--transition-normal);
+  display: inline-block;
+  border: 1px solid rgba(255,255,255,0.3);
 }
 
 /* Sticky Summary Card */
