@@ -469,18 +469,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const summaryToppings = document.getElementById('summaryToppings');
     const montarTotalPrice = document.getElementById('montarTotalPrice');
 
-  if (isMontarPage && acaiForm) {
-    const previewCup = document.getElementById('previewCup');
-    const previewFill = document.getElementById('previewFill');
-    const creamLayersContainer = document.getElementById('creamLayers');
-    const floatingContainer = document.getElementById('floatingIngredients');
-
-    const summarySize = document.getElementById('summarySize');
-    const summaryCremes = document.getElementById('summaryCremes');
-    const summaryFrutas = document.getElementById('summaryFrutas');
-    const summaryToppings = document.getElementById('summaryToppings');
-    const montarTotalPrice = document.getElementById('montarTotalPrice');
-
     const particleClassMap = {
       'Morango': { category: 'fruit', slug: 'morango' },
       'Banana': { category: 'fruit', slug: 'banana' },
